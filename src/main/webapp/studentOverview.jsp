@@ -1,14 +1,18 @@
 <%@ page import="java.sql.Connection" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="ict.bean.WebUser" %>
-<%@ page import="ict.bean.Student" %>
+<%@ page import="ict.bean.Teacher" %>
+<%@ page import="ict.bean.Course" %>
+<%@ page import="java.util.List" %>
+<%@ page import="ict.dao.TeacherDAO" %>
+<%@ page import="ict.dao.CourseDAO" %>
+<%@ page import="java.sql.SQLException" %>
 
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>Student Information</title>
+    <title>Teacher Overview</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="Css.css" rel="stylesheet">
@@ -19,40 +23,54 @@
         <!-- Navigation Bar -->
         <div class="sidebar">
             <header>
-                Student
+                Teacher
             </header>
             <ul>
-                <li><a href="./studentOverview.jsp">Overview</a></li>
+                <li><a href="./teacherOverview.jsp">Overview</a></li>
                 <%
-                    Student loggedInStudent = null;
+                    Teacher loggedInTeacher = null;
                     WebUser loggedInUser = (WebUser) session.getAttribute("loggedInUser");
                     if (loggedInUser != null) {
                         try {
                             Connection yourConnectionObject = DatabaseConnector.getConnection();
 
-                            // Create an instance of StudentDAO
-                            StudentDAO studentDAO = new StudentDAO(yourConnectionObject);
+                            // Create an instance of TeacherDAO
+                            TeacherDAO teacherDAO = new TeacherDAO(yourConnectionObject);
 
                             // Get the userID of the logged-in user (replace this with your actual code to get the userID)
                             int userID = loggedInUser.getUserID();
 
-                            // Retrieve the logged-in student using the StudentDAO instance
-                            loggedInStudent = studentDAO.getStudentByUserID(userID);
+                            // Retrieve the logged-in teacher using the TeacherDAO instance
+                            loggedInTeacher = teacherDAO.getTeacherByUserID(userID);
 
-                            // Now you can use loggedInStudent as needed
-                        } catch (Exception e) {
+                            // Now you can use loggedInTeacher as needed
+                        } catch (SQLException e) {
                             e.printStackTrace();
                             // Handle the exception as needed
                         }
                     }
                 %>
                 <%
-                    if (loggedInStudent != null) {
+                    if (loggedInTeacher != null) {
+                        try {
+                            // Create an instance of CourseDAO
+                            CourseDAO courseDAO = new CourseDAO(DatabaseConnector.getConnection());
+
+                            // Get the courses taught by the logged-in teacher
+                            List<Course> coursesTaught = courseDAO.getCoursesByInstructorID(loggedInTeacher.getTeacherID());
                 %>
-                <li><a href="./studentCourse.jsp?studentID=<%= loggedInStudent.getStudentID() %>">Course</a></li>
-                <li><a href="./studentExam.jsp?studentID=<%= loggedInStudent.getStudentID() %>">Exam result</a></li>
-                <li><a href="./studentInformation.jsp?studentID=<%= loggedInStudent.getStudentID() %>">Information</a></li>
                 <%
+                    for (Course course : coursesTaught) {
+                %>
+                <li><a href="./teacherCourseStudents.jsp?courseID=<%= course.getCourseID() %>"><%= course.getCourseName() %></a></li>
+                <%
+                    }
+                %>
+                <%
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            // Handle the exception as needed
+                        }
                     }
                 %>
                 <li><a href="#">Settings</a></li>
@@ -62,23 +80,23 @@
 
         <div class="main-content">
             <div class="Welcome">
-                <h2>Welcome Back! Student</h2>
+                <h2>Welcome Back! Teacher</h2>
             </div>
             <div class="content">
-                <h4>Student Information</h4>
+                <h4>Teacher Overview</h4>
                 <div class="informationBox">
                     <%-- Retrieve the WebUser object from the session --%>
                     <%
                         if (loggedInUser != null) {
                     %>
-                    <p>Student ID: <%= loggedInStudent.getStudentID()%></p>
-                    <p>First Name: <%= loggedInUser.getFirstName()%></p>
-                    <p>Last Name: <%= loggedInUser.getLastName()%></p>
-                    <!-- Add other student information fields here -->
+                    <p>Teacher ID: <%= loggedInTeacher.getTeacherID() %></p>
+                    <p>First Name: <%= loggedInUser.getFirstName() %></p>
+                    <p>Last Name: <%= loggedInUser.getLastName() %></p>
+                    <!-- Add other teacher information fields here -->
                     <%
                         } else {
                     %>
-                    <p>Student information not found.</p>
+                    <p>Teacher information not found.</p>
                     <%
                         }
                     %>

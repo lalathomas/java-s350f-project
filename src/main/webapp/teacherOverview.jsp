@@ -46,10 +46,10 @@
                         if (loggedInTeacher != null) {
                             try {
                                 // Create an instance of CourseDAO
-                                CourseDAO courseDAO = new CourseDAO(yourConnectionObject);
+                                CourseDAO courseDAO = new CourseDAO(DatabaseConnector.getConnection());
 
                                 // Get the teacher's courses using the CourseDAO instance
-                                List<Course> teachingCourses = courseDAO.getCoursesByInstructorID(loggedInTeacher.getInstructorID());
+                                List<Course> teachingCourses = courseDAO.getCoursesByInstructorID(loggedInTeacher.getTeacherID());
 
                                 if (!teachingCourses.isEmpty()) {
                                     for (Course course : teachingCourses) {

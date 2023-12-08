@@ -135,5 +135,27 @@ public class CourseDAO {
         }
         return studentCourses;
     }
+    public List<Course> getCoursesByInstructorID(int instructorID) {
+        List<Course> courses = new ArrayList<>();
+        String query = "SELECT * FROM Course WHERE InstructorID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, instructorID);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Course course = new Course();
+                    course.setCourseID(resultSet.getInt("CourseID"));
+                    course.setCourseName(resultSet.getString("CourseName"));
+                    course.setCourseDescription(resultSet.getString("CourseDescription"));
+                    course.setCredits(resultSet.getInt("Credits"));
+                    course.setInstructorID(resultSet.getInt("InstructorID"));
+                    // Set other attributes here
+                    courses.add(course);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return courses;
+    }
 
 }

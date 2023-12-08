@@ -102,4 +102,23 @@ public class TeacherDAO {
             e.printStackTrace();
         }
     }
+    public Teacher getTeacherByUserID(int userID) {
+        Teacher teacher = null;
+        String query = "SELECT * FROM Teacher WHERE UserID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, userID);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    teacher = new Teacher();
+                    teacher.setTeacherID(resultSet.getInt("TeacherID"));
+                    teacher.setUserID(resultSet.getInt("UserID"));
+                    // Set other attributes here
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return teacher;
+    }
+
 }

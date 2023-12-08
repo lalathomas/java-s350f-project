@@ -110,4 +110,54 @@ public class GradeDAO {
             e.printStackTrace();
         }
     }
+   public List<Grade> getExamResultsByStudentID(int studentID) {
+        List<Grade> grades = new ArrayList<>();
+        String query = "SELECT Grade.*, Course.CourseName " +
+                       "FROM Grade " +
+                       "JOIN Course ON Grade.CourseID = Course.CourseID " +
+                       "WHERE Grade.StudentID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, studentID);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Grade grade = new Grade();
+                    grade.setGradeID(resultSet.getInt("GradeID"));
+                    grade.setStudentID(resultSet.getInt("StudentID"));
+                    grade.setCourseID(resultSet.getInt("CourseID"));
+                    grade.setAssignmentName(resultSet.getString("AssignmentName"));
+                    grade.setGrade(resultSet.getString("Grade"));
+                    
+                    // Set the CourseName directly in Grade
+                    //grade.setCourseName(resultSet.getString("CourseName"));
+                    
+                    grades.add(grade);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return grades;
+    }
+   public List<Grade> getGradesByCourseID(int courseID) {
+        List<Grade> grades = new ArrayList<>();
+        String query = "SELECT * FROM Grade WHERE CourseID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, courseID);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Grade grade = new Grade();
+                    grade.setGradeID(resultSet.getInt("GradeID"));
+                    grade.setStudentID(resultSet.getInt("StudentID"));
+                    grade.setCourseID(resultSet.getInt("CourseID"));
+                    grade.setAssignmentName(resultSet.getString("AssignmentName"));
+                    grade.setGrade(resultSet.getString("Grade"));
+                    // Set other attributes here
+                    grades.add(grade);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return grades;
+    }
 }
