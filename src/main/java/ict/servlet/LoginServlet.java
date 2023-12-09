@@ -1,3 +1,4 @@
+package ict.servlet;
 
 import ict.bean.Student;
 import ict.bean.WebUser;
@@ -5,12 +6,13 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import ict.dao.*;
 
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
@@ -21,9 +23,15 @@ public class LoginServlet extends HttpServlet {
         String userID = request.getParameter("userid");
         String password = request.getParameter("password");
 
+        System.out.println("UserID: " + userID); // Debug message
+        System.out.println("Password: " + password); // Debug message
+
         // Validate the user
         WebUserDAO webUserDAO = null;
         try {
+            System.out.println(DatabaseConnector.class.getClassLoader());
+            System.out.println(System.getProperty("java.class.path"));
+            Class.forName("com.mysql.cj.jdbc.Driver");
             webUserDAO = new WebUserDAO(DatabaseConnector.getConnection());
         } catch (SQLException ex) {
             Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
@@ -31,11 +39,14 @@ public class LoginServlet extends HttpServlet {
             request.setAttribute("errorMessage", "Database connection error");
             request.getRequestDispatcher("loginPage.jsp").forward(request, response);
             return;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         WebUser loggedInUser = null;
         if (webUserDAO != null) {
             loggedInUser = webUserDAO.validateUser(userID, password);
+            System.out.println("LoggedInUser: " + loggedInUser); // Debug message
         } else {
             System.out.println("No WebUserDAO read");
             // Handle WebUserDAO not initialized
@@ -44,53 +55,49 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        HttpSession session = request.getSession();
+
         if (loggedInUser != null) {
             String role = loggedInUser.getRole();
-            HttpSession session = request.getSession();
 
             switch (role) {
-                case "admin":
+                case "Admin":
                     // Set admin in session and redirect to admin page
-                    session.setAttribute("loggedInAdmin", loggedInUser);
+                    session.setAttribute("loggedInUser", loggedInUser);
                     response.sendRedirect("adminOverview.jsp");
                     break;
-                case "teacher":
+                case "Teacher":
                     // Set teacher in session and redirect to teacher page
-                    session.setAttribute("loggedInTeacher", loggedInUser);
+                    session.setAttribute("loggedInUser", loggedInUser);
                     response.sendRedirect("teacherOverview.jsp");
                     break;
-                case "student":
+                case "Student":
                     // Set student in session and redirect to student page
-                    try {
-                    StudentDAO studentDAO = new StudentDAO(DatabaseConnector.getConnection());
-                    Student loggedInStudent = studentDAO.getStudentByUserID(loggedInUser.getUserID());
-
-                    if (loggedInStudent != null) {
-                        session.setAttribute("loggedInStudent", loggedInStudent);
-                        response.sendRedirect("studentOverview.jsp");
-                    } else {
-                        // Student information not found, handle accordingly
-                        request.setAttribute("errorMessage", "Student information not found");
-                        request.getRequestDispatcher("loginPage.jsp").forward(request, response);
-                    }
+                    StudentDAO studentDAO=null;
+                try {
+                    studentDAO = new StudentDAO(DatabaseConnector.getConnection());
                 } catch (SQLException ex) {
                     Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
-                    // Handle database error for student
-                    request.setAttribute("errorMessage", "Database error for student");
-                    request.getRequestDispatcher("loginPage.jsp").forward(request, response);
                 }
-                break;
+                if(studentDAO==null){
+                    System.out.println("null studentDAO");
+                }
+                    Student loggedInStudent = studentDAO.getStudentByUserID(loggedInUser.getUserID());
+                    session.setAttribute("loggedInUser", loggedInUser);
+                    session.setAttribute("loggedInStudent", loggedInStudent);
+                    response.sendRedirect("studentOverview.jsp");
+                    break;
                 default:
-                    // Unknown role, handle accordingly
+                    // Handle unknown role
                     request.setAttribute("errorMessage", "Unknown role");
                     request.getRequestDispatcher("loginPage.jsp").forward(request, response);
+                    break;
             }
         } else {
             // Invalid user, show error message on login page
+            System.out.println("Incorrect User ID or Password"); // Debug message
             request.setAttribute("errorMessage", "Incorrect User ID or Password");
             request.getRequestDispatcher("loginPage.jsp").forward(request, response);
         }
-        HttpSession session = request.getSession();
-        session.setAttribute("userId", userID);
     }
 }

@@ -24,6 +24,14 @@
                 <input type="submit" value="Login" class="btn">
             </div>
         </form>
+        <% 
+            String errorMessage = (String) request.getAttribute("errorMessage");
+            if (errorMessage != null) {
+        %>
+            <p><%= errorMessage %></p>
+        <% 
+            }
+        %>
     </div>
 </body>
 

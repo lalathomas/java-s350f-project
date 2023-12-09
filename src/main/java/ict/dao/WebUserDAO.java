@@ -2,6 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+package ict.dao;
 
 /**
  *
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WebUserDAO {
+
     private Connection connection;
 
     public WebUserDAO(Connection connection) {
@@ -27,7 +29,7 @@ public class WebUserDAO {
     public WebUser getWebUserById(int userID) {
         WebUser webUser = null;
         String sql = "SELECT * FROM webuser WHERE userID = ?";
-        
+
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, userID);
 
@@ -55,9 +57,8 @@ public class WebUserDAO {
         List<WebUser> webUsers = new ArrayList<>();
         String sql = "SELECT * FROM webuser";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql); ResultSet resultSet = preparedStatement.executeQuery()) {
+
             while (resultSet.next()) {
                 WebUser webUser = new WebUser();
                 webUser.setUserID(resultSet.getInt("userID"));
@@ -131,7 +132,8 @@ public class WebUserDAO {
             return false;
         }
     }
-  public WebUser validateUser(String userID, String password) {
+
+    public WebUser validateUser(String userID, String password) {
         WebUser webUser = null;
         String query = "SELECT * FROM webuser WHERE UserID = ? AND Password = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -144,6 +146,8 @@ public class WebUserDAO {
                     webUser.setUsername(resultSet.getString("Username"));
                     webUser.setPassword(resultSet.getString("Password"));
                     webUser.setRole(resultSet.getString("Role"));
+                    webUser.setFirstName(resultSet.getString("firstName")); // Make sure you're setting the firstName
+                    webUser.setLastName(resultSet.getString("lastName"));
                     // Set other attributes here
                 }
             }

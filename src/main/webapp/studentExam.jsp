@@ -4,7 +4,8 @@
 
 <%@ page import="java.sql.Connection" %>
 <%@ page import="java.util.ArrayList" %>
-
+<%@ page import="ict.dao.DatabaseConnector" %>
+<%@ page import="ict.dao.GradeDAO" %>
 <%@ page import="ict.bean.Student" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <!DOCTYPE html>
